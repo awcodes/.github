@@ -1,0 +1,65 @@
+name: CI / Filament 5
+
+on:
+  push:
+    branches:
+      - 5.x
+      - main
+    paths:
+      - "src/**"
+      - "config/**"
+      - "database/**"
+      - "resources/**"
+      - "routes/**"
+      - "tests/**"
+      - "composer.json"
+      - "composer.lock"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
+      - "phpunit.xml*"
+      - "phpstan.neon*"
+      - "rector.php"
+      - "pint.json"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - 5.x
+      - main
+    paths:
+      - "src/**"
+      - "config/**"
+      - "database/**"
+      - "resources/**"
+      - "routes/**"
+      - "tests/**"
+      - "composer.json"
+      - "composer.lock"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
+      - "phpunit.xml*"
+      - "phpstan.neon*"
+      - "rector.php"
+      - "pint.json"
+      - ".github/workflows/**"
+
+jobs:
+  ci:
+    uses: awcodes/.github/.github/workflows/filament-plugin.yml@v1
+    with:
+      matrix: |
+        [
+          {"php":"8.5","laravel":"13.*","filament":"5.*","testbench":"11.*","dependencies":"prefer-stable"},
+          {"php":"8.4","laravel":"13.*","filament":"5.*","testbench":"11.*","dependencies":"prefer-stable"},
+          {"php":"8.5","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.4","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.3","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"}
+        ]
+      run-tests: true
+      run-lint: true
+      # Flip to true once phpstan-baseline.neon is committed for this package.
+      run-static-analysis: false
+      run-reformat: true
+      # Flip to true for packages that build front-end assets.
+      run-build: false

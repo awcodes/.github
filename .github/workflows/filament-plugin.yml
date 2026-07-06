@@ -1,0 +1,120 @@
+name: Filament Plugin CI
+
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        description: "JSON array of explicit matrix rows (php, laravel, testbench, filament, dependencies)."
+        type: string
+        required: true
+      run-tests:
+        type: boolean
+        default: true
+      run-lint:
+        type: boolean
+        default: true
+      run-static-analysis:
+        type: boolean
+        default: true
+      run-reformat:
+        type: boolean
+        default: true
+      run-build:
+        description: "Build front-end assets before running tests."
+        type: boolean
+        default: false
+      node-version:
+        type: string
+        default: "22"
+      php-version:
+        description: "PHP version for the single-version Lint / Static Analysis / Reformat jobs."
+        type: string
+        default: "8.4"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests
+    if: ${{ inputs.run-tests }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(inputs.matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: awcodes/.github/actions/setup-php@v1
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Install dependencies
+        uses: awcodes/.github/actions/install-dependencies@v1
+        with:
+          laravel: ${{ matrix.laravel }}
+          testbench: ${{ matrix.testbench }}
+          filament: ${{ matrix.filament }}
+          dependency-version: ${{ matrix.dependencies }}
+
+      - name: Setup Node
+        if: ${{ inputs.run-build }}
+        uses: awcodes/.github/actions/setup-node@v1
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Build assets
+        if: ${{ inputs.run-build }}
+        run: npm run build
+
+      - name: Run tests
+        run: vendor/bin/pest --parallel
+
+  lint:
+    name: Lint
+    if: ${{ inputs.run-lint }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup PHP
+        uses: awcodes/.github/actions/setup-php@v1
+        with:
+          php-version: ${{ inputs.php-version }}
+      - name: Install dependencies
+        uses: awcodes/.github/actions/install-dependencies@v1
+      - name: Check code style
+        run: vendor/bin/pint --test
+
+  static-analysis:
+    name: Static Analysis
+    if: ${{ inputs.run-static-analysis }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup PHP
+        uses: awcodes/.github/actions/setup-php@v1
+        with:
+          php-version: ${{ inputs.php-version }}
+      - name: Install dependencies
+        uses: awcodes/.github/actions/install-dependencies@v1
+      - name: Run static analysis
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=2G
+
+  reformat:
+    name: Reformat
+    if: ${{ inputs.run-reformat }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup PHP
+        uses: awcodes/.github/actions/setup-php@v1
+        with:
+          php-version: ${{ inputs.php-version }}
+      - name: Install dependencies
+        uses: awcodes/.github/actions/install-dependencies@v1
+      - name: Check refactoring
+        run: vendor/bin/rector --dry-run

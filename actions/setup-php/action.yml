@@ -1,0 +1,36 @@
+name: "Setup PHP"
+description: "Set up PHP with the extensions and problem matchers used across awcodes packages."
+
+inputs:
+  php-version:
+    description: "PHP version to install (e.g. 8.4)."
+    required: true
+  extensions:
+    description: "Comma-separated PHP extensions."
+    required: false
+    default: "dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, intl, fileinfo"
+  coverage:
+    description: "Coverage driver (none, xdebug, pcov)."
+    required: false
+    default: "none"
+  tools:
+    description: "Comma-separated tools for setup-php to install globally."
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: ${{ inputs.extensions }}
+        coverage: ${{ inputs.coverage }}
+        tools: ${{ inputs.tools }}
+
+    - name: Register problem matchers
+      shell: bash
+      run: |
+        echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+        echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"

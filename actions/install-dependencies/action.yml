@@ -1,0 +1,65 @@
+name: "Install Composer Dependencies"
+description: >
+  Pin the framework/testbench/filament versions for the current matrix row and install
+  Composer dependencies. Centralizes the require+update logic shared across packages.
+
+inputs:
+  laravel:
+    description: "laravel/framework version constraint (e.g. 13.*). Optional for plain PHP libraries."
+    required: false
+    default: ""
+  testbench:
+    description: "orchestra/testbench version constraint (e.g. 11.*). Optional."
+    required: false
+    default: ""
+  filament:
+    description: "filament/filament version constraint (e.g. 5.*). Optional; only for Filament plugins."
+    required: false
+    default: ""
+  dependency-version:
+    description: "Composer stability flag: prefer-stable or prefer-lowest."
+    required: false
+    default: "prefer-stable"
+  additional-require:
+    description: "Extra space-separated 'package:constraint' pairs to require before updating."
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache Composer dependencies
+      uses: actions/cache@v5
+      with:
+        path: ~/.composer/cache/files
+        key: composer-${{ runner.os }}-${{ hashFiles('composer.json') }}
+        restore-keys: |
+          composer-${{ runner.os }}-
+
+    - name: Pin matrix dependency versions
+      shell: bash
+      run: |
+        args=()
+        if [ -n "${{ inputs.laravel }}" ]; then
+          args+=("laravel/framework:${{ inputs.laravel }}")
+        fi
+        if [ -n "${{ inputs.testbench }}" ]; then
+          args+=("orchestra/testbench:${{ inputs.testbench }}")
+        fi
+        if [ -n "${{ inputs.filament }}" ]; then
+          args+=("filament/filament:${{ inputs.filament }}")
+        fi
+        if [ -n "${{ inputs.additional-require }}" ]; then
+          # shellcheck disable=SC2206
+          args+=(${{ inputs.additional-require }})
+        fi
+        if [ ${#args[@]} -gt 0 ]; then
+          echo "Requiring: ${args[*]}"
+          composer require "${args[@]}" --no-interaction --no-update
+        else
+          echo "No matrix versions to pin; installing composer.json as-is."
+        fi
+
+    - name: Install dependencies
+      shell: bash
+      run: composer update --${{ inputs.dependency-version }} --prefer-dist --no-interaction --no-progress

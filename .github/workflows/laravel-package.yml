@@ -1,0 +1,89 @@
+name: Laravel Package CI
+
+on:
+  workflow_call:
+    inputs:
+      matrix:
+        description: "JSON array of explicit matrix rows (php, laravel, testbench, dependencies)."
+        type: string
+        required: true
+      run-tests:
+        type: boolean
+        default: true
+      run-lint:
+        type: boolean
+        default: true
+      run-static-analysis:
+        type: boolean
+        default: true
+      run-reformat:
+        type: boolean
+        default: true
+      php-version:
+        description: "PHP version for the single-version Lint / Static Analysis / Reformat jobs."
+        type: string
+        default: "8.4"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests
+    if: ${{ inputs.run-tests }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(inputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup PHP
+        uses: awcodes/.github/actions/setup-php@v1
+        with:
+          php-version: ${{ matrix.php }}
+      - name: Install dependencies
+        uses: awcodes/.github/actions/install-dependencies@v1
+        with:
+          laravel: ${{ matrix.laravel }}
+          testbench: ${{ matrix.testbench }}
+          dependency-version: ${{ matrix.dependencies }}
+      - name: Run tests
+        run: vendor/bin/pest --parallel
+
+  lint:
+    name: Lint
+    if: ${{ inputs.run-lint }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: awcodes/.github/actions/setup-php@v1
+        with:
+          php-version: ${{ inputs.php-version }}
+      - uses: awcodes/.github/actions/install-dependencies@v1
+      - run: vendor/bin/pint --test
+
+  static-analysis:
+    name: Static Analysis
+    if: ${{ inputs.run-static-analysis }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: awcodes/.github/actions/setup-php@v1
+        with:
+          php-version: ${{ inputs.php-version }}
+      - uses: awcodes/.github/actions/install-dependencies@v1
+      - run: vendor/bin/phpstan analyse --no-progress --memory-limit=2G
+
+  reformat:
+    name: Reformat
+    if: ${{ inputs.run-reformat }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: awcodes/.github/actions/setup-php@v1
+        with:
+          php-version: ${{ inputs.php-version }}
+      - uses: awcodes/.github/actions/install-dependencies@v1
+      - run: vendor/bin/rector --dry-run
