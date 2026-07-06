@@ -38,7 +38,7 @@ jobs:
       matrix:
         include: ${{ fromJson(inputs.matrix) }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup PHP
         uses: awcodes/.github/actions/setup-php@v1
         with:
@@ -55,7 +55,7 @@ jobs:
     if: ${{ inputs.run-lint }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: awcodes/.github/actions/setup-php@v1
         with:
           php-version: ${{ inputs.php-version }}
@@ -67,7 +67,7 @@ jobs:
     if: ${{ inputs.run-static-analysis }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: awcodes/.github/actions/setup-php@v1
         with:
           php-version: ${{ inputs.php-version }}
@@ -79,7 +79,7 @@ jobs:
     if: ${{ inputs.run-reformat }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: awcodes/.github/actions/setup-php@v1
         with:
           php-version: ${{ inputs.php-version }}
