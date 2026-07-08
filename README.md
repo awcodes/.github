@@ -1,4 +1,4 @@
-# awcodes/.github — Shared CI
+# awcodes - Shared CI
 
 Central reusable GitHub Actions workflows, composite actions, and canonical tooling
 config for awcodes packages. Package repos consume these through thin, branch-scoped
