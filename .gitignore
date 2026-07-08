@@ -1,0 +1,37 @@
+# JetBrains IDEs (PhpStorm, IntelliJ, etc.)
+/.idea/
+*.iml
+
+# Other editors
+/.vscode/
+/.fleet/
+/.zed/
+/.nova/
+*.code-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+Desktop.ini
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# PHP / Composer
+/vendor/
+composer.phar
+.phpunit.result.cache
+.phpunit.cache/
+.php-cs-fixer.cache
+.pint.cache
+
+# Node
+/node_modules/
+npm-debug.log
+yarn-error.log
