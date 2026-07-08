@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "composer.json"
+      - "composer.lock"
+      - "phpunit.xml*"
+      - "phpstan.neon*"
+      - "rector.php"
+      - "pint.json"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "composer.json"
+      - "composer.lock"
+      - "phpunit.xml*"
+      - "phpstan.neon*"
+      - "rector.php"
+      - "pint.json"
+      - ".github/workflows/**"
+
+jobs:
+  ci:
+    uses: awcodes/.github/.github/workflows/php-library.yml@v1
+    with:
+      matrix: |
+        [
+          {"php":"8.5","dependencies":"prefer-stable"},
+          {"php":"8.4","dependencies":"prefer-stable"},
+          {"php":"8.3","dependencies":"prefer-stable"},
+          {"php":"8.2","dependencies":"prefer-lowest"}
+        ]
+      run-tests: true
+      run-lint: true
+      # Flip to true once phpstan-baseline.neon is committed for this package.
+      run-static-analysis: false
+      run-reformat: true
