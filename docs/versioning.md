@@ -34,3 +34,13 @@ Bump to a new major (`v2`) when a change would fail existing callers, e.g.:
 
 Additive changes (new optional inputs with defaults, new toggles) stay within the current
 major.
+
+## Two pinning strategies, on purpose
+
+- **Packages → this repo: moving major tag (`@v1`).** Packages pin the caller to `@v1`, not a
+  SHA, so a moved `v1` tag propagates CI fixes to every package at once. Do **not** SHA-pin
+  the `awcodes/.github/...` caller ref — that would defeat the model above.
+- **This repo → third-party actions: full commit SHA.** Leaf actions
+  (`actions/checkout`, `actions/cache`, `actions/setup-node`, `shivammathur/setup-php`) are
+  pinned to a full SHA with a trailing `# vX.Y.Z` comment for supply-chain safety. Dependabot
+  (`.github/dependabot.yml`) bumps the SHA and keeps the comment current.

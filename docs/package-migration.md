@@ -13,6 +13,7 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
 ## 2. Normalize tooling (Layer B)
 
 - [ ] Copy `templates/pint.json`, `rector.php`, `phpstan.neon.dist`, `phpstan-baseline.neon`
+- [ ] Copy `templates/dependabot.yml` to `.github/dependabot.yml`
 - [ ] Merge `require-dev` + `scripts` from `templates/composer-snippets.md`
   - [ ] Add `rector/rector` if missing (e.g. `gtm`)
   - [ ] Add `larastan/larastan` if missing

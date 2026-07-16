@@ -24,6 +24,7 @@ templates/                Canonical Layer B config to copy into each package
   phpstan-php-library.neon.dist  plain phpstan (no Laravel)
   phpstan-baseline.neon
   composer-snippets.md      require-dev + scripts to merge into composer.json
+  dependabot.yml            Copy to .github/dependabot.yml (composer + actions updates)
   callers/                  Example caller workflows
     ci-filament-5.yml
     ci-filament-4.yml
@@ -67,19 +68,20 @@ bin/bootstrap-package.sh <package-dir> --type <type>
 | `laravel`     | `ci-laravel.yml`      | Laravel/Filament                            |
 | `php-library` | `ci-php-library.yml`  | Plain PHP (phpstan, Pest — no Laravel deps) |
 
-It copies the config templates, merges the canonical `require-dev` / `scripts` /
-`allow-plugins` into `composer.json`, and drops in the caller workflow. Existing files are
-left alone unless you pass `--force`. Then finish the judgement-heavy steps by hand (steps
-1–2 and 4–5 below).
+It copies the config templates (including `.github/dependabot.yml`), merges the canonical
+`require-dev` / `scripts` / `allow-plugins` into `composer.json`, and drops in the caller
+workflow. Existing files are left alone unless you pass `--force`. Then finish the
+judgement-heavy steps by hand (steps 5–6 below, plus the matrix/baseline tuning).
 
 ### Manually
 
 1. Copy `templates/pint.json`, `rector.php`, `phpstan.neon.dist`, `phpstan-baseline.neon`
    (for a plain PHP library use `templates/phpstan-php-library.neon.dist` instead).
 2. Merge the `require-dev` + `scripts` from `templates/composer-snippets.md`.
-3. Drop a caller from `templates/callers/` into `.github/workflows/`, adjust the matrix.
-4. Delete the old `tests.yml` / `lint.yml` / static-analysis workflows.
-5. Update branch-protection required checks to the intent names.
+3. Copy `templates/dependabot.yml` to `.github/dependabot.yml`.
+4. Drop a caller from `templates/callers/` into `.github/workflows/`, adjust the matrix.
+5. Delete the old `tests.yml` / `lint.yml` / static-analysis workflows.
+6. Update branch-protection required checks to the intent names.
 
 After either path: `composer update`, run `vendor/bin/phpstan analyse --generate-baseline`,
 then flip `run-static-analysis: true` in the caller.
@@ -110,7 +112,8 @@ shared CI baseline defined in the awcodes/.github repository.
 
 3. Apply the mechanical steps — either run
    `/tmp/awcodes-github/bin/bootstrap-package.sh . --type <type>` or do it by hand:
-   - Copy the config templates (use phpstan-php-library.neon.dist for a plain PHP library).
+   - Copy the config templates (use phpstan-php-library.neon.dist for a plain PHP library),
+     including templates/dependabot.yml -> .github/dependabot.yml.
    - Merge the canonical require-dev / scripts / config.allow-plugins into composer.json,
      preserving existing package-specific dev deps. Do NOT change the runtime `require` block.
    - Add the matching caller workflow under .github/workflows/, referencing @v1.

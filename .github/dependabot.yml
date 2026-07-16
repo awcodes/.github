@@ -1,0 +1,17 @@
+# Keeps the third-party actions pinned inside the reusable workflows and composite
+# actions current (shivammathur/setup-php, actions/checkout, actions/cache, setup-node).
+# Automates the manual "bump third-party actions" toil. Grouped into one weekly PR.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    # Wait for a release to settle before opening a PR — longer for majors.
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      github-actions:
+        patterns:
+          - "*"

@@ -82,6 +82,8 @@ copy_template() {
 copy_template pint.json
 copy_template rector.php
 copy_template phpstan-baseline.neon
+mkdir -p "$TARGET/.github"
+copy_template dependabot.yml .github/dependabot.yml
 if [[ "$PROFILE" == "php-library" ]]; then
     copy_template phpstan-php-library.neon.dist phpstan.neon.dist
 else
