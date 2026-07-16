@@ -44,3 +44,19 @@ major.
   (`actions/checkout`, `actions/cache`, `actions/setup-node`, `shivammathur/setup-php`) are
   pinned to a full SHA with a trailing `# vX.Y.Z` comment for supply-chain safety. Dependabot
   (`.github/dependabot.yml`) bumps the SHA and keeps the comment current.
+
+### Dependabot must ignore the caller
+
+A package's `.github/dependabot.yml` has to exclude this repo from its `github-actions`
+updates — `templates/dependabot.yml` ships that `ignore` rule:
+
+```yaml
+ignore:
+  - dependency-name: "awcodes/.github/*"
+```
+
+Dependabot has no concept of a moving major. It reads `@v1` as version `1` and offers the
+newest semver tag, so it opens PRs like *"Bump …/laravel-package.yml from 1 to 1.1.0"*.
+Merging one pins the package to a snapshot and silently opts it out of the model above —
+and it is often a **downgrade**, because `v1` moves ahead of the older release tags it
+suggests. Moving to a new major is a deliberate migration, not a Dependabot bump.
