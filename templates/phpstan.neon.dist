@@ -4,7 +4,13 @@ includes:
 
 parameters:
     level: 5
+    # `src` is the only path every package has. phpstan hard-errors with
+    # "Path ... does not exist" on a listed directory that is absent, so extra
+    # paths are opt-in: uncomment `config` / `database` only if this package
+    # actually ships them. Most do not — roughly two thirds of the fleet has no
+    # config/ directory.
     paths:
         - src
-        - config
+        # - config
+        # - database
     tmpDir: build/phpstan

@@ -1,0 +1,86 @@
+name: CI
+
+# Canonical caller for a Filament plugin.
+#
+# Plugins serve every supported Filament major from ONE branch, with a constraint like
+# `"filament/filament": "^4.0|^5.0"` in composer.json. So a package gets one caller file,
+# scoped to its one active branch, and the matrix below pins `filament` per row — that is
+# what gives each major real coverage. Without a per-row pin every row resolves the newest
+# major under prefer-stable, and the older half of the constraint is never executed.
+#
+# REPLACE <active-branch> with this repo's active branch. It varies per package (1.x, 2.x,
+# 3.x, 4.x, 5.x, main) — read it, do not assume `main`.
+#
+# For a frozen legacy branch that still needs its own CI, see ci-filament-4.yml.
+
+on:
+  push:
+    branches:
+      - <active-branch>
+    paths:
+      - "src/**"
+      - "config/**"
+      - "database/**"
+      - "resources/**"
+      - "routes/**"
+      - "tests/**"
+      - "composer.json"
+      - "composer.lock"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
+      - "phpunit.xml*"
+      - "phpstan.neon*"
+      - "rector.php"
+      - "pint.json"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - <active-branch>
+    paths:
+      - "src/**"
+      - "config/**"
+      - "database/**"
+      - "resources/**"
+      - "routes/**"
+      - "tests/**"
+      - "composer.json"
+      - "composer.lock"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
+      - "phpunit.xml*"
+      - "phpstan.neon*"
+      - "rector.php"
+      - "pint.json"
+      - ".github/workflows/**"
+
+jobs:
+  ci:
+    uses: awcodes/.github/.github/workflows/filament-plugin.yml@v1
+    with:
+      # Explicit rows, no `exclude`. Drop any row this package cannot satisfy — check
+      # TRANSITIVE constraints too, not just composer.json (a runtime dependency can cap
+      # the PHP range), and confirm orchestra/testbench allows ^11.0 before keeping the
+      # Laravel 13 rows.
+      matrix: |
+        [
+          {"php":"8.5","laravel":"13.*","filament":"5.*","testbench":"11.*","dependencies":"prefer-stable"},
+          {"php":"8.4","laravel":"13.*","filament":"5.*","testbench":"11.*","dependencies":"prefer-stable"},
+          {"php":"8.5","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.4","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.3","laravel":"12.*","filament":"5.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.4","laravel":"12.*","filament":"4.*","testbench":"10.*","dependencies":"prefer-stable"},
+          {"php":"8.3","laravel":"12.*","filament":"4.*","testbench":"10.*","dependencies":"prefer-stable"}
+        ]
+      # Form-only plugins require filament/forms rather than the panel package. Set this
+      # so the matrix pins the package the plugin actually depends on, instead of pulling
+      # the whole panel into the test app to constrain one component.
+      # filament-package: filament/forms
+      run-tests: true
+      run-lint: true
+      # Flip to true once phpstan-baseline.neon is committed for this package.
+      run-static-analysis: false
+      run-reformat: true
+      # Flip to true for packages that build front-end assets.
+      run-build: false
