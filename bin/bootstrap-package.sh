@@ -16,11 +16,14 @@
 # Usage:
 #   bin/bootstrap-package.sh <package-dir> [--type TYPE] [--force]
 #
-# TYPE (default: filament-5):
-#   filament-5   Filament plugin, Filament 5.x caller
-#   filament-4   Filament plugin, Filament 4.x caller
+# TYPE (default: filament):
+#   filament     Filament plugin — one ci.yml, combined matrix covering every supported
+#                Filament major from the package's single active branch
+#   filament-4   Filament plugin, caller for a FROZEN LEGACY branch only
 #   laravel      Laravel package (no Filament)
 #   php-library  Plain PHP library (no Laravel — leaner tooling profile)
+#
+#   filament-5   Deprecated alias for `filament`, kept so existing invocations keep working
 #
 # Existing files are left untouched unless --force is passed.
 
@@ -34,7 +37,7 @@ info() { printf '  %s\n' "$1"; }
 
 # --- args -------------------------------------------------------------------
 TARGET=""
-TYPE="filament-5"
+TYPE="filament"
 FORCE=0
 
 while [[ $# -gt 0 ]]; do
@@ -53,11 +56,21 @@ TARGET="$(cd "$TARGET" && pwd)"
 [[ -f "$TARGET/composer.json" ]] || die "no composer.json in $TARGET"
 
 # --- resolve type -> caller template + composer profile ---------------------
+# `filament-5` predates the shared-branch normalization, when each Filament major had its
+# own branch. One branch now serves them all, so it maps onto `filament`.
+if [[ "$TYPE" == "filament-5" ]]; then
+    printf 'note: --type filament-5 is deprecated; using filament (one caller, combined matrix)\n' >&2
+    TYPE="filament"
+fi
+
 # PROFILE is passed to the PHP composer merge below to pick the right dep set.
+# CALLER_DST is the filename the caller lands under in the package repo.
 case "$TYPE" in
-    filament-5|filament-4|laravel) PROFILE="laravel" ;;
-    php-library)                   PROFILE="php-library" ;;
-    *) die "unknown --type '$TYPE' (expected: filament-5, filament-4, laravel, php-library)" ;;
+    filament)    PROFILE="laravel";     CALLER_DST="ci.yml" ;;
+    filament-4)  PROFILE="laravel";     CALLER_DST="ci-filament-4.yml" ;;
+    laravel)     PROFILE="laravel";     CALLER_DST="ci-laravel.yml" ;;
+    php-library) PROFILE="php-library"; CALLER_DST="ci-php-library.yml" ;;
+    *) die "unknown --type '$TYPE' (expected: filament, filament-4, laravel, php-library)" ;;
 esac
 
 CALLER_SRC="$TEMPLATES/callers/ci-$TYPE.yml"
@@ -172,18 +185,23 @@ if ($profile !== "php-library") {
 # --- 3. caller workflow -----------------------------------------------------
 echo "Caller workflow:"
 mkdir -p "$TARGET/.github/workflows"
-CALLER_DST="$TARGET/.github/workflows/ci-$TYPE.yml"
-if [[ -e "$CALLER_DST" && $FORCE -eq 0 ]]; then
-    info "skip ci-$TYPE.yml (exists — use --force to overwrite)"
+CALLER_PATH="$TARGET/.github/workflows/$CALLER_DST"
+if [[ -e "$CALLER_PATH" && $FORCE -eq 0 ]]; then
+    info "skip $CALLER_DST (exists — use --force to overwrite)"
 else
-    cp "$CALLER_SRC" "$CALLER_DST"
-    info "copied .github/workflows/ci-$TYPE.yml"
+    cp "$CALLER_SRC" "$CALLER_PATH"
+    info "copied .github/workflows/$CALLER_DST"
+    if [[ "$TYPE" == "filament" ]]; then
+        info "ACTION REQUIRED: replace <active-branch> in $CALLER_DST with this repo's active branch"
+    fi
 fi
 
 # --- next steps -------------------------------------------------------------
+echo
+echo "Done. Finish by hand (see docs/package-migration.md):"
+[[ "$TYPE" == "filament" ]] && \
+    echo "  - Replace <active-branch> in $CALLER_DST with this repo's active branch."
 cat <<'EOF'
-
-Done. Finish by hand (see docs/package-migration.md):
   - Tune the matrix rows in the caller to the versions this package supports.
   - composer update, then vendor/bin/phpstan analyse --generate-baseline
     (then flip run-static-analysis: true in the caller).

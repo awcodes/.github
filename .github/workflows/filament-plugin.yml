@@ -19,6 +19,12 @@ on:
       run-reformat:
         type: boolean
         default: true
+      filament-package:
+        description: >
+          Composer package the matrix `filament` constraint is applied to. Defaults to the
+          panel package; set to `filament/forms` for form-only plugins.
+        type: string
+        default: "filament/filament"
       run-build:
         description: "Build front-end assets before running tests."
         type: boolean
@@ -59,6 +65,7 @@ jobs:
           laravel: ${{ matrix.laravel }}
           testbench: ${{ matrix.testbench }}
           filament: ${{ matrix.filament }}
+          filament-package: ${{ inputs.filament-package }}
           dependency-version: ${{ matrix.dependencies }}
 
       - name: Setup Node

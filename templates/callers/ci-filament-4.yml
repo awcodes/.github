@@ -36,8 +36,15 @@ on:
       - "pint.json"
       - ".github/workflows/**"
 
-# Scoped to the 4.x branch: if this file is merged forward into 5.x it simply will not
-# run there, so a single canonical CI file no longer needs manual preservation on merges.
+# LEGACY BRANCH ONLY.
+#
+# Packages normally serve every supported Filament major from one branch and get a single
+# ci.yml (see ci-filament.yml). This file is for the exception: a frozen branch kept alive
+# for an older major after the active branch has moved on — e.g. curator's 4.x.
+#
+# Because its `on:` is scoped to that branch, merging it forward is harmless; it will not
+# run on the newer branch. Adjust the branch name and the matrix to whatever the frozen
+# branch actually supports.
 jobs:
   ci:
     uses: awcodes/.github/.github/workflows/filament-plugin.yml@v1

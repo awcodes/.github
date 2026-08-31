@@ -13,9 +13,17 @@ inputs:
     required: false
     default: ""
   filament:
-    description: "filament/filament version constraint (e.g. 5.*). Optional; only for Filament plugins."
+    description: "Filament version constraint (e.g. 5.*). Optional; only for Filament plugins."
     required: false
     default: ""
+  filament-package:
+    description: >
+      Composer package the `filament` constraint is applied to. Defaults to the panel
+      package. Set to `filament/forms` (or another component) for plugins that require a
+      single Filament component rather than the whole panel, so the matrix pins what the
+      plugin actually depends on. Ignored unless `filament` is set.
+    required: false
+    default: "filament/filament"
   dependency-version:
     description: "Composer stability flag: prefer-stable or prefer-lowest."
     required: false
@@ -47,7 +55,7 @@ runs:
           args+=("orchestra/testbench:${{ inputs.testbench }}")
         fi
         if [ -n "${{ inputs.filament }}" ]; then
-          args+=("filament/filament:${{ inputs.filament }}")
+          args+=("${{ inputs.filament-package }}:${{ inputs.filament }}")
         fi
         if [ -n "${{ inputs.additional-require }}" ]; then
           # shellcheck disable=SC2206

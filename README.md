@@ -26,8 +26,8 @@ templates/                Canonical Layer B config to copy into each package
   composer-snippets.md      require-dev + scripts to merge into composer.json
   dependabot.yml            Copy to .github/dependabot.yml (composer + actions updates)
   callers/                  Example caller workflows
-    ci-filament-5.yml
-    ci-filament-4.yml
+    ci-filament.yml           One branch, combined matrix — the default for plugins
+    ci-filament-4.yml         Frozen legacy branch only
     ci-laravel.yml
     ci-php-library.yml
 
@@ -59,14 +59,18 @@ docs/
 bin/bootstrap-package.sh <package-dir> --type <type>
 ```
 
-`--type` (default `filament-5`) selects the tooling profile and caller workflow:
+`--type` (default `filament`) selects the tooling profile and caller workflow:
 
-| `--type`      | Caller                | Tooling profile                             |
-| ------------- | --------------------- | ------------------------------------------- |
-| `filament-5`  | `ci-filament-5.yml`   | Laravel/Filament (larastan, testbench, Pest)|
-| `filament-4`  | `ci-filament-4.yml`   | Laravel/Filament                            |
-| `laravel`     | `ci-laravel.yml`      | Laravel/Filament                            |
-| `php-library` | `ci-php-library.yml`  | Plain PHP (phpstan, Pest — no Laravel deps) |
+| `--type`      | Lands as              | Tooling profile                              |
+| ------------- | --------------------- | -------------------------------------------- |
+| `filament`    | `ci.yml`              | Laravel/Filament (larastan, testbench, Pest) |
+| `filament-4`  | `ci-filament-4.yml`   | Laravel/Filament — frozen legacy branch only |
+| `laravel`     | `ci-laravel.yml`      | Laravel/Filament                             |
+| `php-library` | `ci-php-library.yml`  | Plain PHP (phpstan, Pest — no Laravel deps)  |
+
+`filament-5` still works as a deprecated alias for `filament`. It predates the
+shared-branch normalization, when each Filament major had its own branch; one branch now
+serves them all from a single caller with a combined matrix.
 
 It copies the config templates (including `.github/dependabot.yml`), merges the canonical
 `require-dev` / `scripts` / `allow-plugins` into `composer.json`, and drops in the caller
@@ -79,7 +83,9 @@ judgement-heavy steps by hand (steps 5–6 below, plus the matrix/baseline tunin
    (for a plain PHP library use `templates/phpstan-php-library.neon.dist` instead).
 2. Merge the `require-dev` + `scripts` from `templates/composer-snippets.md`.
 3. Copy `templates/dependabot.yml` to `.github/dependabot.yml`.
-4. Drop a caller from `templates/callers/` into `.github/workflows/`, adjust the matrix.
+4. Drop a caller from `templates/callers/` into `.github/workflows/`. For a Filament
+   plugin, replace the `<active-branch>` placeholder with the repo's active branch, then
+   adjust the matrix.
 5. Delete the old `tests.yml` / `lint.yml` / static-analysis workflows.
 6. Update branch-protection required checks to the intent names.
 
@@ -107,8 +113,10 @@ shared CI baseline defined in the awcodes/.github repository.
    - bin/bootstrap-package.sh    scaffolds the mechanical steps
 
 2. Determine this package's type from composer.json `require`:
-   filament/filament -> filament-5 (or filament-4), laravel/illuminate deps but no
-   Filament -> laravel, otherwise -> php-library.
+   filament/filament or filament/forms -> filament, laravel/illuminate deps but no
+   Filament -> laravel, otherwise -> php-library. Filament plugins are single-branch and
+   carry a constraint like "^4.0|^5.0", so they get ONE ci.yml whose matrix pins filament
+   per row, not a caller per major.
 
 3. Apply the mechanical steps — either run
    `/tmp/awcodes-github/bin/bootstrap-package.sh . --type <type>` or do it by hand:
@@ -118,7 +126,12 @@ shared CI baseline defined in the awcodes/.github repository.
      preserving existing package-specific dev deps. Do NOT change the runtime `require` block.
    - Add the matching caller workflow under .github/workflows/, referencing @v1.
 
-4. Tune the caller matrix to the versions this package actually supports.
+4. Replace <active-branch> in the caller with this repo's active branch (1.x/2.x/3.x/4.x/
+   5.x/main — read it, do not assume), and tune the matrix to the versions this package
+   actually supports. Check TRANSITIVE dependency constraints, and confirm
+   orchestra/testbench allows ^11.0 before keeping the Laravel 13 rows. For a plugin that
+   requires filament/forms rather than the panel package, set `filament-package:
+   filament/forms` on the caller.
 
 5. Run `composer update`, then `vendor/bin/phpstan analyse --generate-baseline`; commit the
    baseline and set `run-static-analysis: true`. Confirm `composer test` passes.

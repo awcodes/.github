@@ -24,6 +24,28 @@ git tag -f v1
 git push origin v1 --force
 ```
 
+## Cutting a release
+
+The moving tag only helps if it actually moves. Both steps, every time:
+
+```bash
+# 1. Immutable reference tag for the new state.
+git tag -a v1.3.0 -m "…"
+git push origin v1.3.0
+
+# 2. Move the major tag packages actually track.
+git tag -f v1
+git push origin v1 --force
+```
+
+Skipping step 2 is silent: every package keeps consuming the previous commit, CI stays
+green, and nothing surfaces the drift. Skipping step 1 is also silent, but costs you the
+ability to say what `v1` pointed at last week. Check with:
+
+```bash
+git rev-parse v1 v1.3.0   # same commit, or the tag did not move
+```
+
 ## What counts as breaking
 
 Bump to a new major (`v2`) when a change would fail existing callers, e.g.:
