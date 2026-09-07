@@ -20,7 +20,8 @@ actions/                  Composite actions
 templates/                Canonical Layer B config to copy into each package
   pint.json
   rector.php
-  phpstan.neon.dist            larastan-based (Laravel/Filament packages)
+  phpstan.neon.dist            larastan-based (Laravel/Filament packages); analyses
+                               src + workbench, excluding workbench/storage
   phpstan-php-library.neon.dist  plain phpstan (no Laravel)
   phpstan-baseline.neon
   composer-snippets.md      require-dev + scripts to merge into composer.json
