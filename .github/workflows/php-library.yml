@@ -85,3 +85,32 @@ jobs:
           php-version: ${{ inputs.php-version }}
       - uses: awcodes/.github/actions/install-dependencies@v1
       - run: vendor/bin/rector --dry-run
+
+  # Single aggregate check for branch protection. `Tests` is a matrix job, so it
+  # surfaces as one check per row with names that change whenever the matrix does —
+  # it cannot be required by name across packages. This job can: it is one stable
+  # check, `<caller-job-id> / All Checks`, regardless of matrix shape.
+  #
+  # A job disabled via its `run-*` input reports `skipped`, which counts as a pass.
+  # `failure` and `cancelled` do not.
+  all-checks:
+    name: All Checks
+    if: ${{ always() }}
+    needs: [tests, lint, static-analysis, reformat]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify no job failed
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS"
+          failed=$(echo "$RESULTS" | jq -r '
+            to_entries[]
+            | select(.value.result != "success" and .value.result != "skipped")
+            | "\(.key)=\(.value.result)"
+          ')
+          if [ -n "$failed" ]; then
+            echo "::error::Not all checks passed: $(echo "$failed" | tr '\n' ' ')"
+            exit 1
+          fi
+          echo "All checks passed or were intentionally skipped."
