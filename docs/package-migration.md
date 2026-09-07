@@ -24,6 +24,10 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
         Laravel-aware; dropping it silently downgrades the analysis
   - [ ] Uncomment the `config` / `database` paths only if this package ships them
         (phpstan hard-errors on a listed path that does not exist)
+  - [ ] Keep `reportUnmatchedIgnoredErrors: false` — without it, an analyser bump that
+        stops reporting a baselined error turns the now-dead ignore into a hard CI
+        failure, with no change to the package. If the repo already has a phpstan
+        config that predates this, add the setting while you are in there
 - [ ] Copy `templates/dependabot.yml` to `.github/dependabot.yml`
 - [ ] Merge `require-dev` + `scripts` from `templates/composer-snippets.md`
   - [ ] Add `rector/rector` if missing (e.g. `gtm`)
