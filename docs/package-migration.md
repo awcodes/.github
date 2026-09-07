@@ -7,11 +7,15 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
 
 - [ ] Package type: Filament plugin · Laravel package · PHP library
 - [ ] Needs Node / asset build? (`run-build`)
-- [ ] Active branch name (varies per package: `1.x`–`5.x` or `main` — read it)
+- [ ] Active branch name — read it from `gh api repos/<remote> --jq .default_branch`, not
+      from the clone (`origin/HEAD` is stale in much of the fleet and points at a legacy
+      branch). Varies per package: `1.x`–`5.x` or `main`.
 - [ ] Any frozen legacy branch that still needs its own caller? (usually not — see
       `docs/branch-specific-workflows.md`)
 - [ ] Requires `filament/forms` rather than the panel package? (needs `filament-package`)
 - [ ] Note current branch-protection required checks (to update at the end)
+- [ ] Does the repo already carry a `dependabot-auto-merge.yml`? If so it is merging
+      Dependabot PRs on arrival — replace it in this PR (see step 5)
 
 ## 2. Normalize tooling (Layer B)
 
@@ -55,8 +59,14 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
 
 ## 5. Finalize
 
-- [ ] Update branch-protection required checks to: `Tests`, `Lint`, `Static Analysis`,
-      `Reformat`
+- [ ] Require the `<caller-job-id> / All Checks` status check on the active branch. Do
+      not require the four job names directly — `Tests` is a matrix job, so its check
+      names change with the matrix. See `docs/branch-protection.md`.
+- [ ] If the repo has a `dependabot-auto-merge.yml`: replace it with
+      `templates/dependabot-auto-merge.yml` (github-actions + `dev-dependencies` only,
+      never `production-dependencies`), and set `allow_auto_merge: true` on the repo so
+      `--auto` queues behind the required check instead of merging immediately. If you
+      are not requiring a check yet, delete the workflow instead of shipping it.
 - [ ] Update `CONTRIBUTING.md` (note the shared CI + local `composer lint` / `refactor`)
 - [ ] Merge
 

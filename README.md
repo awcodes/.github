@@ -25,6 +25,8 @@ templates/                Canonical Layer B config to copy into each package
   phpstan-baseline.neon
   composer-snippets.md      require-dev + scripts to merge into composer.json
   dependabot.yml            Copy to .github/dependabot.yml (composer + actions updates)
+  dependabot-auto-merge.yml Optional — auto-merge low-risk Dependabot PRs. Requires the
+                            `All Checks` ruleset first; see docs/branch-protection.md
   callers/                  Example caller workflows
     ci-filament.yml           One branch, combined matrix — the default for plugins
     ci-filament-4.yml         Frozen legacy branch only
@@ -38,12 +40,16 @@ docs/
   package-migration.md
   versioning.md
   branch-specific-workflows.md
+  branch-protection.md
 ```
 
 ## Design principles
 
 - **Intent-based check names** — `Tests`, `Lint`, `Static Analysis`, `Reformat` — stable
-  even if the underlying tool changes. These become the branch-protection required checks.
+  even if the underlying tool changes.
+- **One aggregate check to require** — `All Checks` rolls the four up via `needs:`, so
+  branch protection names a single context that survives matrix changes. `Tests` is a
+  matrix job and its per-row check names are not stable enough to require directly.
 - **Explicit matrix rows, no `exclude`** — each package lists only the combos it supports.
 - **`run-*` toggles** — turn individual checks on/off per package (e.g. keep
   `run-static-analysis: false` until a package's phpstan baseline is committed).
@@ -74,7 +80,9 @@ serves them all from a single caller with a combined matrix.
 
 It copies the config templates (including `.github/dependabot.yml`), merges the canonical
 `require-dev` / `scripts` / `allow-plugins` into `composer.json`, and drops in the caller
-workflow. Existing files are left alone unless you pass `--force`. Then finish the
+workflow. Existing files are left alone unless you pass `--force`. Pass `--auto-merge` to
+also install `dependabot-auto-merge.yml` — leave it off until the repo requires the
+`All Checks` check, or the workflow will merge Dependabot PRs on arrival. Then finish the
 judgement-heavy steps by hand (steps 5–6 below, plus the matrix/baseline tuning).
 
 ### Manually
@@ -87,7 +95,9 @@ judgement-heavy steps by hand (steps 5–6 below, plus the matrix/baseline tunin
    plugin, replace the `<active-branch>` placeholder with the repo's active branch, then
    adjust the matrix.
 5. Delete the old `tests.yml` / `lint.yml` / static-analysis workflows.
-6. Update branch-protection required checks to the intent names.
+6. Require the `All Checks` status check on the active branch, and enable
+   `allow_auto_merge` if the package uses `templates/dependabot-auto-merge.yml`
+   (see `docs/branch-protection.md`).
 
 After either path: `composer update`, run `vendor/bin/phpstan analyse --generate-baseline`,
 then flip `run-static-analysis: true` in the caller.
@@ -107,6 +117,7 @@ shared CI baseline defined in the awcodes/.github repository.
 1. Pull the canonical instructions and templates from awcodes/.github
    (`gh repo clone awcodes/.github /tmp/awcodes-github`, or read the raw GitHub files):
    - docs/package-migration.md   the full checklist (source of truth)
+   - docs/branch-protection.md   what to require, and why auto-merge needs it
    - README.md                   Quick start + package types
    - templates/                  pint.json, rector.php, phpstan configs, composer-snippets.md
    - templates/callers/          example caller workflows

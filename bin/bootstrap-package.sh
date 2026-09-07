@@ -11,10 +11,11 @@
 #   - Tune the matrix rows in the caller to the versions this package supports.
 #   - `composer update`, then `vendor/bin/phpstan analyse --generate-baseline`.
 #   - Delete the old tests.yml / lint.yml / static-analysis workflows.
-#   - Update branch-protection required checks to Tests / Lint / Static Analysis / Reformat.
+#   - Require the `All Checks` status check and enable allow_auto_merge on the repo
+#     (see docs/branch-protection.md).
 #
 # Usage:
-#   bin/bootstrap-package.sh <package-dir> [--type TYPE] [--force]
+#   bin/bootstrap-package.sh <package-dir> [--type TYPE] [--force] [--auto-merge]
 #
 # TYPE (default: filament):
 #   filament     Filament plugin — one ci.yml, combined matrix covering every supported
@@ -24,6 +25,10 @@
 #   php-library  Plain PHP library (no Laravel — leaner tooling profile)
 #
 #   filament-5   Deprecated alias for `filament`, kept so existing invocations keep working
+#
+# --auto-merge additionally installs templates/dependabot-auto-merge.yml. Opt in only
+# once the repo requires the `All Checks` check — without it the workflow merges
+# Dependabot PRs on arrival rather than waiting for CI.
 #
 # Existing files are left untouched unless --force is passed.
 
@@ -39,18 +44,20 @@ info() { printf '  %s\n' "$1"; }
 TARGET=""
 TYPE="filament"
 FORCE=0
+AUTO_MERGE=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --type)  TYPE="${2:-}"; shift 2 ;;
         --force) FORCE=1; shift ;;
+        --auto-merge) AUTO_MERGE=1; shift ;;
         -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         -*) die "unknown option: $1" ;;
         *)  [[ -z "$TARGET" ]] || die "unexpected argument: $1"; TARGET="$1"; shift ;;
     esac
 done
 
-[[ -n "$TARGET" ]] || die "usage: bin/bootstrap-package.sh <package-dir> [--type TYPE] [--force]"
+[[ -n "$TARGET" ]] || die "usage: bin/bootstrap-package.sh <package-dir> [--type TYPE] [--force] [--auto-merge]"
 [[ -d "$TARGET" ]] || die "not a directory: $TARGET"
 TARGET="$(cd "$TARGET" && pwd)"
 [[ -f "$TARGET/composer.json" ]] || die "no composer.json in $TARGET"
@@ -194,6 +201,14 @@ else
     if [[ "$TYPE" == "filament" ]]; then
         info "ACTION REQUIRED: replace <active-branch> in $CALLER_DST with this repo's active branch"
     fi
+fi
+
+# Deliberately not copied by default: the auto-merge workflow merges on arrival unless
+# the repo already requires the `All Checks` status check. Opt in with --auto-merge once
+# branch protection is in place. See docs/branch-protection.md.
+if [[ $AUTO_MERGE -eq 1 ]]; then
+    copy_template dependabot-auto-merge.yml .github/workflows/dependabot-auto-merge.yml
+    info "ACTION REQUIRED: require 'ci / All Checks' and enable allow_auto_merge on this repo"
 fi
 
 # --- next steps -------------------------------------------------------------
