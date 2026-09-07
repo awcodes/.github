@@ -17,4 +17,6 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     paths:
         - src
+        # No `workbench` here: a plain PHP library has no Testbench app to analyse.
+        # The Laravel/Filament profile analyses workbench/ — see phpstan.neon.dist.
     tmpDir: build/phpstan

@@ -24,6 +24,12 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
         Laravel-aware; dropping it silently downgrades the analysis
   - [ ] Uncomment the `config` / `database` paths only if this package ships them
         (phpstan hard-errors on a listed path that does not exist)
+  - [ ] Keep the `workbench` path and the `workbench/storage (?)` exclude. The workbench
+        is dev-only but hand-written, and it exercises this package's own API — analysing
+        it has surfaced real gaps (a plugin macro invisible to static analysis). Expect
+        roughly 1-7 new baseline entries. Remove the `workbench` line only if the package
+        has no `workbench/`; phpstan and rector both hard-error on a missing path, and the
+        `(?)` optional marker works in `excludePaths` but NOT in `paths`.
   - [ ] Keep `reportUnmatchedIgnoredErrors: false` — without it, an analyser bump that
         stops reporting a baselined error turns the now-dead ignore into a hard CI
         failure, with no change to the package. If the repo already has a phpstan
