@@ -29,8 +29,20 @@ parameters:
         # on a listed path that does not exist, and the `(?)` optional marker works
         # only in excludePaths, not here.
         - workbench
-        # - config
-        # - database
+        # config/ and database/ are shipped code, so they are analysed too. These are
+        # listed rather than commented out ON PURPOSE: phpstan hard-errors on a path
+        # that does not exist, so a package without one fails loudly on its first local
+        # run and you delete the line. That is a five-second fix you cannot miss.
+        #
+        # The previous default commented both out to avoid that error. The result was an
+        # opt-in nobody opted into across twenty packages, and it cost a real shipped
+        # bug: postal-codes carried `$table->float('lat', 10, 8)` against Laravel 11's
+        # narrowed float($column, $precision = 53). PHP silently discards the extra
+        # argument, so the column lost precision on MySQL, PostgreSQL and SQL Server.
+        # phpstan reports it as `arguments.count` at LEVEL 0 — it was never subtle, just
+        # unanalysed. A loud error beats a silent gap.
+        - config
+        - database
     excludePaths:
         analyse:
             # workbench/storage is gitignored, but it appears the moment anyone runs
