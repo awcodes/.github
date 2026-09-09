@@ -22,7 +22,12 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
 - [ ] Copy `templates/pint.json`, `rector.php`, `phpstan.neon.dist`, `phpstan-baseline.neon`
   - [ ] Keep `includes:` intact — larastan's `extension.neon` is what makes phpstan
         Laravel-aware; dropping it silently downgrades the analysis
-  - [ ] Uncomment the `config` / `database` paths only if this package ships them
+  - [ ] `config` and `database` are listed by default. **Delete a line only if this
+        package does not ship that directory** — phpstan and rector both hard-error on
+        a missing path, so you will find out on the first local run. That is deliberate:
+        they used to be commented out, which turned into an opt-in nobody exercised
+        across twenty packages, and it cost a shipped bug (`arguments.count` on a
+        migration, catchable at level 0). A loud error beats a silent gap
         (phpstan hard-errors on a listed path that does not exist)
   - [ ] Keep the `workbench` path and the `workbench/storage (?)` exclude. The workbench
         is dev-only but hand-written, and it exercises this package's own API — analysing
