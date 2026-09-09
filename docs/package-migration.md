@@ -56,6 +56,12 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
 - [ ] Set `filament-package: filament/forms` for form-only plugins
 - [ ] Set `run-static-analysis: true` once the baseline is committed (else leave `false`)
 - [ ] Set `run-build: true` for asset-building packages
+- [ ] Leave the `paths` filters as the template ships them. They must include
+      `workbench/**`, because rector and phpstan analyse `workbench/` (see .github#6) —
+      if the trigger omits it, a workbench-only commit runs no CI at all, lands on the
+      active branch unchecked, and then fails the *next*, unrelated PR. `bin/**` is there
+      for the same reason: it holds the asset build script, so a change there changes the
+      built bundle without touching `resources/`
 - [ ] Delete old `tests.yml`, `lint.yml`, and any static-analysis workflow
 - [ ] Remove the old auto-format-on-merge `lint.yml` (replaced by the `Reformat`/`Lint`
       checks)
@@ -64,7 +70,7 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
 
 - [ ] Push a branch; the caller triggers the reusable workflow
 - [ ] `Tests`, `Lint`, `Static Analysis`, `Reformat` report as separate checks
-- [ ] A README-only change skips CI (path filters)
+- [ ] A README-only change skips CI, but a `workbench/`-only change does NOT (path filters)
 - [ ] Matrix rows match the intended set; Composer installs; all checks green
 
 ## 5. Finalize
