@@ -54,7 +54,7 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
 
 ## 3. Switch to shared CI (Layer A)
 
-- [ ] Add one caller from `templates/callers/`, referencing `@v1`, and replace the
+- [ ] Add one caller from `templates/callers/`, keeping its SHA pin, and replace the
       `<active-branch>` placeholder with this repo's active branch
 - [ ] Set explicit matrix rows for the versions this branch supports, pinning `filament`
       per row so every supported major actually runs
