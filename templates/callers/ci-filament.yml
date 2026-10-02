@@ -71,7 +71,7 @@ on:
 
 jobs:
   ci:
-    uses: awcodes/.github/.github/workflows/filament-plugin.yml@v1
+    uses: awcodes/.github/.github/workflows/filament-plugin.yml@ad63f1536b965fed92274516cb81f172b1d60e1a # v1.4.3
     with:
       # Explicit rows, no `exclude`. Drop any row this package cannot satisfy — check
       # TRANSITIVE constraints too, not just composer.json (a runtime dependency can cap

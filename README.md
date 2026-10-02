@@ -54,7 +54,8 @@ docs/
 - **Explicit matrix rows, no `exclude`** — each package lists only the combos it supports.
 - **`run-*` toggles** — turn individual checks on/off per package (e.g. keep
   `run-static-analysis: false` until a package's phpstan baseline is committed).
-- **Version-pinned consumption** — callers reference `@v1`, never `@main`.
+- **SHA-pinned consumption** — callers reference a release commit SHA with a `# vX.Y.Z`
+  comment, never `@main` or the moving `@v1` tag. Dependabot keeps the pin current.
 
 ## Quick start (per package)
 
@@ -136,7 +137,8 @@ shared CI baseline defined in the awcodes/.github repository.
      including templates/dependabot.yml -> .github/dependabot.yml.
    - Merge the canonical require-dev / scripts / config.allow-plugins into composer.json,
      preserving existing package-specific dev deps. Do NOT change the runtime `require` block.
-   - Add the matching caller workflow under .github/workflows/, referencing @v1.
+   - Add the matching caller workflow under .github/workflows/. Keep the SHA pin it ships
+     with (`@<sha> # vX.Y.Z`); do not change it to @v1.
 
 4. Replace <active-branch> in the caller with this repo's active branch (1.x/2.x/3.x/4.x/
    5.x/main — read it, do not assume), and tune the matrix to the versions this package
