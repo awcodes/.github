@@ -66,7 +66,8 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
       if the trigger omits it, a workbench-only commit runs no CI at all, lands on the
       active branch unchecked, and then fails the *next*, unrelated PR. `bin/**` is there
       for the same reason: it holds the asset build script, so a change there changes the
-      built bundle without touching `resources/`
+      built bundle without touching `resources/`. `.github/dependabot.yml` is there because
+      the ruleset requires `All Checks`: a config-only PR that runs no CI stays blocked
 - [ ] Delete old `tests.yml`, `lint.yml`, and any static-analysis workflow
 - [ ] Remove the old auto-format-on-merge `lint.yml` (replaced by the `Reformat`/`Lint`
       checks)
