@@ -25,7 +25,7 @@ templates/                Canonical Layer B config to copy into each package
   phpstan-php-library.neon.dist  plain phpstan (no Laravel)
   phpstan-baseline.neon
   composer-snippets.md      require-dev + scripts to merge into composer.json
-  dependabot.yml            Copy to .github/dependabot.yml (composer + actions updates)
+  dependabot.yml            Copy to .github/dependabot.yml (composer, npm + actions updates)
   callers/                  Example caller workflows
     ci-filament.yml           One branch, combined matrix — the default for plugins
     ci-filament-4.yml         Frozen legacy branch only
@@ -88,7 +88,8 @@ judgement-heavy steps by hand (steps 5–6 below, plus the matrix/baseline tunin
 1. Copy `templates/pint.json`, `rector.php`, `phpstan.neon.dist`, `phpstan-baseline.neon`
    (for a plain PHP library use `templates/phpstan-php-library.neon.dist` instead).
 2. Merge the `require-dev` + `scripts` from `templates/composer-snippets.md`.
-3. Copy `templates/dependabot.yml` to `.github/dependabot.yml`.
+3. Copy `templates/dependabot.yml` to `.github/dependabot.yml`. Delete its npm entry if the
+   package has no `package.json`.
 4. Drop a caller from `templates/callers/` into `.github/workflows/`. For a Filament
    plugin, replace the `<active-branch>` placeholder with the repo's active branch, then
    adjust the matrix.
