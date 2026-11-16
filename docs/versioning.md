@@ -61,8 +61,8 @@ git rev-parse v1 v1.5.0   # same commit, or the tag did not move
 ### What reaches packages, and when
 
 - **Workflow changes** reach a package only when it merges the Dependabot bump. The
-  package's 7-day cooldown applies, and `dependabot-auto-merge.yml` merges minor and patch
-  bumps once `All Checks` passes. A major bump is never auto-merged.
+  package's 7-day cooldown applies, and the bump is merged by hand once `All Checks`
+  passes (there is no auto-merge; see `docs/branch-protection.md`).
 - **Composite-action changes** reach every package as soon as `v1` moves (step 2), whatever
   SHA the package is pinned to. Treat an action change with that in mind.
 - **Docs- or template-only changes** need no release. A tag with no workflow change behind
