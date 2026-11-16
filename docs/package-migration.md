@@ -39,7 +39,8 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
         stops reporting a baselined error turns the now-dead ignore into a hard CI
         failure, with no change to the package. If the repo already has a phpstan
         config that predates this, add the setting while you are in there
-- [ ] Copy `templates/dependabot.yml` to `.github/dependabot.yml`
+- [ ] Copy `templates/dependabot.yml` to `.github/dependabot.yml`. Delete the npm entry if the
+      package has no `package.json` (Dependabot reports an error for a missing manifest)
 - [ ] Merge `require-dev` + `scripts` from `templates/composer-snippets.md`
   - [ ] Add `rector/rector` if missing (e.g. `gtm`)
   - [ ] Add `larastan/larastan` if missing

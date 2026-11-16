@@ -16,6 +16,8 @@ on:
       # lands on the active branch unchecked and then fails the NEXT unrelated PR.
       - "workbench/**"
       - "composer.json"
+      - "package.json"
+      - "package-lock.json"
       - "composer.lock"
       - "phpunit.xml*"
       - "phpstan.neon*"
@@ -43,6 +45,8 @@ on:
       # lands on the active branch unchecked and then fails the NEXT unrelated PR.
       - "workbench/**"
       - "composer.json"
+      - "package.json"
+      - "package-lock.json"
       - "composer.lock"
       - "phpunit.xml*"
       - "phpstan.neon*"

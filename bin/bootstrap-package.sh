@@ -102,6 +102,13 @@ copy_template rector.php
 copy_template phpstan-baseline.neon
 mkdir -p "$TARGET/.github"
 copy_template dependabot.yml .github/dependabot.yml
+# The npm entry only applies to packages with a package.json; Dependabot reports an
+# error for a missing manifest. Strip it from a freshly copied file when there isn't one.
+if [[ ! -f "$TARGET/package.json" ]] && grep -q 'package-ecosystem: npm' "$TARGET/.github/dependabot.yml"; then
+    awk '/^  # npm — /{skip=1} /^  # GitHub Actions/{skip=0} !skip' "$TARGET/.github/dependabot.yml" > "$TARGET/.github/dependabot.yml.tmp" \
+        && mv "$TARGET/.github/dependabot.yml.tmp" "$TARGET/.github/dependabot.yml"
+    info "removed the npm entry from .github/dependabot.yml (no package.json)"
+fi
 if [[ "$PROFILE" == "php-library" ]]; then
     copy_template phpstan-php-library.neon.dist phpstan.neon.dist
 else
@@ -211,5 +218,6 @@ cat <<'EOF'
   - composer update, then vendor/bin/phpstan analyse --generate-baseline
     (then flip run-static-analysis: true in the caller).
   - Delete the old tests.yml / lint.yml / static-analysis workflows.
-  - Update branch-protection required checks to: Tests, Lint, Static Analysis, Reformat.
+  - Require the `ci / All Checks` status check on the active branch
+    (see docs/branch-protection.md).
 EOF
