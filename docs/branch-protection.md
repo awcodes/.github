@@ -1,7 +1,7 @@
-# Branch protection and auto-merge
+# Branch protection
 
 The four CI jobs are advisory until a ruleset requires them. This page covers what to
-require, and why the Dependabot auto-merge template is unsafe without it.
+require and how to set it up.
 
 ## Require `All Checks`, not the four job names
 
@@ -46,36 +46,20 @@ gh api -X POST "repos/$REPO/rulesets" \
   -f 'rules[][type]=required_status_checks' \
   -F 'rules[][parameters][strict_required_status_checks_policy]=false' \
   -f 'rules[][parameters][required_status_checks][][context]=ci / All Checks'
-
-gh api -X PATCH "repos/$REPO" -F allow_auto_merge=true
 ```
 
-Both halves are required, and they do different jobs:
+## No Dependabot auto-merge
 
-- **The ruleset** is the safety. It is what makes a PR un-mergeable while CI is running
-  or red.
-- **`allow_auto_merge`** is not a safety switch. It only decides whether a PR that is
-  blocked can sit in a queue and merge itself later, instead of the merge attempt
-  failing outright.
+The fleet used to ship a `dependabot-auto-merge.yml` that queued minor and patch
+Dependabot PRs with `gh pr merge --auto`. It was removed in November 2026:
 
-## Why auto-merge needs the ruleset
+- It merged about five PRs fleet-wide in three months, because grouping and cooldowns
+  keep Dependabot volume low.
+- It ran on `pull_request_target` with `contents: write` in every package.
+- It was only safe while two settings outside the repo held: this ruleset, and
+  `allow_auto_merge`. Without the required check it merged Dependabot PRs on arrival,
+  with no CI.
 
-`gh pr merge --auto` asks GitHub to merge the PR *once whatever is blocking it clears*.
-If nothing is blocking it, that condition is already satisfied when the PR opens, and
-the merge happens immediately — no CI, no wait.
-
-So the combinations are:
-
-| `allow_auto_merge` | Required check | Result |
-|---|---|---|
-| off | none | Merges instantly, ungated |
-| on | none | Nothing to wait for — still merges instantly |
-| off | yes | Cannot queue; the step fails and the PR stays open |
-| on | yes | Queues, waits for green, merges itself |
-
-Only the last row is the intended behaviour. Ship
-`templates/dependabot-auto-merge.yml` into a repo only once that repo is in it.
-
-Note that turning `allow_auto_merge` on does not make anything more permissive than it
-already is: with no required check, the workflow merges regardless. The ruleset is the
-change that matters.
+Merge Dependabot PRs by hand once `All Checks` passes. Every package's CI path filters
+include `.github/dependabot.yml`, so config-only PRs run CI too. Keep the ruleset: it
+still blocks a red or unfinished PR from merging. Leave `allow_auto_merge` off.

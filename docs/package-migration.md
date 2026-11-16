@@ -14,8 +14,8 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
       `docs/branch-specific-workflows.md`)
 - [ ] Requires `filament/forms` rather than the panel package? (needs `filament-package`)
 - [ ] Note current branch-protection required checks (to update at the end)
-- [ ] Does the repo already carry a `dependabot-auto-merge.yml`? If so it is merging
-      Dependabot PRs on arrival — replace it in this PR (see step 5)
+- [ ] Does the repo carry a `dependabot-auto-merge.yml`? If so, delete it in this PR
+      (see step 5)
 
 ## 2. Normalize tooling (Layer B)
 
@@ -84,11 +84,8 @@ One PR per package. Normalize the tooling baseline (Layer B) and switch to share
 - [ ] Require the `<caller-job-id> / All Checks` status check on the active branch. Do
       not require the four job names directly — `Tests` is a matrix job, so its check
       names change with the matrix. See `docs/branch-protection.md`.
-- [ ] If the repo has a `dependabot-auto-merge.yml`: replace it with
-      `templates/dependabot-auto-merge.yml` (github-actions + `dev-dependencies` only,
-      never `production-dependencies`), and set `allow_auto_merge: true` on the repo so
-      `--auto` queues behind the required check instead of merging immediately. If you
-      are not requiring a check yet, delete the workflow instead of shipping it.
+- [ ] Delete any `dependabot-auto-merge.yml` and leave `allow_auto_merge` off. The fleet
+      merges Dependabot PRs by hand (see `docs/branch-protection.md`).
 - [ ] Update `CONTRIBUTING.md` (note the shared CI + local `composer lint` / `refactor`)
 - [ ] Merge
 

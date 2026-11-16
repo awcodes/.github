@@ -26,8 +26,6 @@ templates/                Canonical Layer B config to copy into each package
   phpstan-baseline.neon
   composer-snippets.md      require-dev + scripts to merge into composer.json
   dependabot.yml            Copy to .github/dependabot.yml (composer + actions updates)
-  dependabot-auto-merge.yml Optional — auto-merge low-risk Dependabot PRs. Requires the
-                            `All Checks` ruleset first; see docs/branch-protection.md
   callers/                  Example caller workflows
     ci-filament.yml           One branch, combined matrix — the default for plugins
     ci-filament-4.yml         Frozen legacy branch only
@@ -82,9 +80,7 @@ serves them all from a single caller with a combined matrix.
 
 It copies the config templates (including `.github/dependabot.yml`), merges the canonical
 `require-dev` / `scripts` / `allow-plugins` into `composer.json`, and drops in the caller
-workflow. Existing files are left alone unless you pass `--force`. Pass `--auto-merge` to
-also install `dependabot-auto-merge.yml` — leave it off until the repo requires the
-`All Checks` check, or the workflow will merge Dependabot PRs on arrival. Then finish the
+workflow. Existing files are left alone unless you pass `--force`. Then finish the
 judgement-heavy steps by hand (steps 5–6 below, plus the matrix/baseline tuning).
 
 ### Manually
@@ -97,8 +93,7 @@ judgement-heavy steps by hand (steps 5–6 below, plus the matrix/baseline tunin
    plugin, replace the `<active-branch>` placeholder with the repo's active branch, then
    adjust the matrix.
 5. Delete the old `tests.yml` / `lint.yml` / static-analysis workflows.
-6. Require the `All Checks` status check on the active branch, and enable
-   `allow_auto_merge` if the package uses `templates/dependabot-auto-merge.yml`
+6. Require the `All Checks` status check on the active branch
    (see `docs/branch-protection.md`).
 
 After either path: `composer update`, run `vendor/bin/phpstan analyse --generate-baseline`,
@@ -119,7 +114,7 @@ shared CI baseline defined in the awcodes/.github repository.
 1. Pull the canonical instructions and templates from awcodes/.github
    (`gh repo clone awcodes/.github /tmp/awcodes-github`, or read the raw GitHub files):
    - docs/package-migration.md   the full checklist (source of truth)
-   - docs/branch-protection.md   what to require, and why auto-merge needs it
+   - docs/branch-protection.md   what to require, and why there is no auto-merge
    - README.md                   Quick start + package types
    - templates/                  pint.json, rector.php, phpstan configs, composer-snippets.md
    - templates/callers/          example caller workflows
